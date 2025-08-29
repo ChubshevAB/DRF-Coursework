@@ -1,0 +1,81 @@
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+pythonenv*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+pip-wheel-metadata/
+*.egg-info/
+.installed.cfg
+*.egg
+dist/
+build/
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.pytest_cache/
+
+# Database migrations (можно раскомментировать для новых проектов)
+# migrations/
+# !migrations/__init__.py
+
+# macOS
+.DS_Store
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# PyCharm
+.idea/
+*.iml
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Backend secrets
+secrets.json
+config.json
+*.key
+*.pem
+
+config/__pycache__
