@@ -33,5 +33,5 @@ app.conf.beat_schedule = {
     },
 }
 
-app.conf.timezone = "Europe/Moscow"
-app.conf.enable_utc = False
+app.conf.timezone = "UTC"
+app.conf.enable_utc = True
