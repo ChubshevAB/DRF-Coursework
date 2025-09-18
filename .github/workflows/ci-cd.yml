@@ -37,7 +37,7 @@ jobs:
 
     - name: Run flake8 linting
       run: |
-        flake8 . --count --max-line-length=127 --statistics
+        flake8 . --count --max-line-length=127 --statistics --exclude=migrations
 
     - name: Run tests
       env:
