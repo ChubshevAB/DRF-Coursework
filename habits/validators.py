@@ -7,7 +7,7 @@ def validate_frequency(value):
     """
     Валидатор для проверки, что привычка выполняется не реже 1 раза в 7 дней
     """
-    if value > 7:
+    if value < 1 or value > 7:
         raise ValidationError("Нельзя выполнять привычку реже, чем 1 раз в 7 дней.")
 
 
