@@ -19,9 +19,7 @@ class HabitModelTest(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-            email="test@example.com",
-            username="testuser",
-            password="testpass123"
+            email="test@example.com", username="testuser", password="testpass123"
         )
 
     def test_create_habit_success(self):
@@ -84,7 +82,9 @@ class HabitModelTest(TestCase):
         with self.assertRaises(ValidationError):
             habit.full_clean()
 
-    def test_useful_habit_with_both_reward_and_related_habit_raises_validation_error(self):
+    def test_useful_habit_with_both_reward_and_related_habit_raises_validation_error(
+        self,
+    ):
         """Тест полезной привычки с вознаграждением и связанной привычкой вызывает ValidationError"""
         pleasant_habit = Habit.objects.create(
             user=self.user,
@@ -191,11 +191,7 @@ class HabitValidatorTest(TestCase):
         )
 
         habit = Habit.objects.create(
-            user=user,
-            place="Дом",
-            time=time(9, 0),
-            action="Тест",
-            duration=30
+            user=user, place="Дом", time=time(9, 0), action="Тест", duration=30
         )
 
         old_date = timezone.now().date() - timedelta(days=1)
@@ -213,11 +209,7 @@ class HabitValidatorTest(TestCase):
         )
 
         habit = Habit.objects.create(
-            user=user,
-            place="Дом",
-            time=time(9, 0),
-            action="Тест",
-            duration=30
+            user=user, place="Дом", time=time(9, 0), action="Тест", duration=30
         )
 
         future_date = timezone.now().date() + timedelta(days=1)
@@ -232,14 +224,10 @@ class HabitAPITest(APITestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(
-            email="api@example.com",
-            username="apiuser",
-            password="testpass123"
+            email="api@example.com", username="apiuser", password="testpass123"
         )
         self.other_user = User.objects.create_user(
-            email="other@example.com",
-            username="otheruser",
-            password="testpass123"
+            email="other@example.com", username="otheruser", password="testpass123"
         )
 
         self.habit = Habit.objects.create(
@@ -421,9 +409,7 @@ class HabitServiceTest(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-            email="service@example.com",
-            username="serviceuser",
-            password="testpass123"
+            email="service@example.com", username="serviceuser", password="testpass123"
         )
 
         self.habit = Habit.objects.create(
@@ -457,10 +443,12 @@ class HabitServiceTest(TestCase):
         user_without_telegram = User.objects.create_user(
             email="notelegram@example.com",
             username="notelegramuser",
-            password="testpass123"
+            password="testpass123",
         )
 
-        result = HabitReminderService.send_reminder_notification(user_without_telegram, self.habit)
+        result = HabitReminderService.send_reminder_notification(
+            user_without_telegram, self.habit
+        )
         self.assertFalse(result)  # Должно вернуть False, так как нет telegram_chat_id
 
 
@@ -518,9 +506,9 @@ class TelegramServiceTest(TestCase):
         service = TelegramService()
 
         # Проверяем наличие основных методов
-        self.assertTrue(hasattr(service, 'send_message'))
-        self.assertTrue(hasattr(service, 'bot'))
-        self.assertTrue(hasattr(service, 'send_reminder'))
+        self.assertTrue(hasattr(service, "send_message"))
+        self.assertTrue(hasattr(service, "bot"))
+        self.assertTrue(hasattr(service, "send_reminder"))
 
     def test_telegram_service_send_message_returns_bool(self):
         """Тест что метод send_message возвращает boolean"""

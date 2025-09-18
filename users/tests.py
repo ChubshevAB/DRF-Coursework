@@ -16,7 +16,7 @@ class UserModelTest(TestCase):
         self.user_data = {
             "email": "test@example.com",
             "username": "testuser",
-            "password": "testpass123"
+            "password": "testpass123",
         }
 
     def test_create_user_success(self):
@@ -33,17 +33,13 @@ class UserModelTest(TestCase):
         """Тест создания пользователя без email вызывает ошибку"""
         with self.assertRaises(ValueError):
             User.objects.create_user(
-                email="",
-                username="testuser",
-                password="testpass123"
+                email="", username="testuser", password="testpass123"
             )
 
     def test_create_superuser_success(self):
         """Тест успешного создания суперпользователя"""
         admin_user = User.objects.create_superuser(
-            email="admin@example.com",
-            username="admin",
-            password="adminpass123"
+            email="admin@example.com", username="admin", password="adminpass123"
         )
 
         self.assertEqual(admin_user.email, "admin@example.com")
@@ -57,7 +53,7 @@ class UserModelTest(TestCase):
                 email="admin@example.com",
                 username="admin",
                 password="adminpass123",
-                is_staff=False
+                is_staff=False,
             )
 
     def test_create_superuser_without_superuser_status_raises_error(self):
@@ -67,7 +63,7 @@ class UserModelTest(TestCase):
                 email="admin@example.com",
                 username="admin",
                 password="adminpass123",
-                is_superuser=False
+                is_superuser=False,
             )
 
     def test_email_unique_constraint(self):
@@ -78,7 +74,7 @@ class UserModelTest(TestCase):
             User.objects.create_user(
                 email="test@example.com",
                 username="differentuser",
-                password="testpass123"
+                password="testpass123",
             )
 
     def test_str_method_returns_email(self):
@@ -94,7 +90,7 @@ class UserModelTest(TestCase):
             password="testpass123",
             first_name="Test",
             last_name="User",
-            telegram_chat_id="123456789"
+            telegram_chat_id="123456789",
         )
 
         self.assertEqual(user.first_name, "Test")
@@ -116,9 +112,7 @@ class UserAPITest(APITestCase):
             "last_name": "User",
         }
         self.admin_user = User.objects.create_superuser(
-            email="admin@example.com",
-            username="admin",
-            password="adminpass123"
+            email="admin@example.com", username="admin", password="adminpass123"
         )
 
     def test_user_registration_success(self):
@@ -156,9 +150,7 @@ class UserAPITest(APITestCase):
     def test_user_login_success(self):
         """Тест успешного входа пользователя"""
         User.objects.create_user(
-            email="login@example.com",
-            username="loginuser",
-            password="testpass123"
+            email="login@example.com", username="loginuser", password="testpass123"
         )
 
         url = reverse("user-login")
@@ -180,9 +172,7 @@ class UserAPITest(APITestCase):
     def test_get_current_user_info_authenticated(self):
         """Тест получения информации о текущем пользователе с аутентификацией"""
         user = User.objects.create_user(
-            email="current@example.com",
-            username="currentuser",
-            password="testpass123"
+            email="current@example.com", username="currentuser", password="testpass123"
         )
         self.client.force_authenticate(user=user)
 
@@ -203,9 +193,7 @@ class UserAPITest(APITestCase):
     def test_update_user_profile_success(self):
         """Тест успешного обновления профиля пользователя"""
         user = User.objects.create_user(
-            email="update@example.com",
-            username="updateuser",
-            password="testpass123"
+            email="update@example.com", username="updateuser", password="testpass123"
         )
         self.client.force_authenticate(user=user)
 
@@ -234,9 +222,7 @@ class UserAPITest(APITestCase):
     def test_list_users_as_regular_user_returns_forbidden(self):
         """Тест получения списка пользователей обычным пользователем возвращает запрет"""
         user = User.objects.create_user(
-            email="regular@example.com",
-            username="regularuser",
-            password="testpass123"
+            email="regular@example.com", username="regularuser", password="testpass123"
         )
         self.client.force_authenticate(user=user)
 
