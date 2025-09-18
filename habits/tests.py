@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, tag
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
@@ -493,6 +493,7 @@ class HabitPaginationTest(APITestCase):
         self.assertEqual(len(response.data["results"]), 5)
 
 
+@tag('telegram')
 class TelegramServiceTest(TestCase):
     """Тесты Telegram сервиса"""
 
