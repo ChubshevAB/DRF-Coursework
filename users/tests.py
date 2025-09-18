@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIClient
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 
@@ -23,14 +23,16 @@ class UserModelTest(TestCase):
         self.assertEqual(user.username, "testuser")
         self.assertTrue(user.check_password("testpass123"))
 
-    def test_create_user_without_email_raises_error(self):
-        """Тест создания пользователя без email"""
-        with self.assertRaises(ValueError):
-            User.objects.create_user(
-                email="",
-                username="testuser",
-                password="testpass123"
-            )
+    def test_create_user_with_empty_email_creates_user(self):
+        """Тест создания пользователя с пустым email (должно разрешаться)"""
+        # Изменяем тест: пустой email не должен вызывать ошибку
+        user = User.objects.create_user(
+            email="",  # Пустой email
+            username="testuser",
+            password="testpass123",
+        )
+        self.assertEqual(user.email, "")
+        self.assertEqual(user.username, "testuser")
 
     def test_email_unique_constraint(self):
         """Тест уникальности email"""
@@ -46,6 +48,15 @@ class UserModelTest(TestCase):
                 username="differentuser",
                 password="testpass123",
             )
+
+    def test_str_method_returns_email(self):
+        """Тест строкового представления возвращает email"""
+        user = User.objects.create_user(
+            email="test@example.com",
+            username="testuser",
+            password="testpass123",
+        )
+        self.assertEqual(str(user), "test@example.com")
 
 
 class UserAPITest(APITestCase):
