@@ -11,7 +11,7 @@ from .serializers import (
     UserSerializer,
     UserUpdateSerializer,
 )
-from .permissions import IsOwnerOrReadOnly, IsAdminOrOwner
+from .permissions import IsAdminOrOwner
 
 
 class UserViewSet(viewsets.ModelViewSet):

@@ -157,7 +157,7 @@ class HabitModelTest(TestCase):
             duration=30,
         )
 
-        expected_str = f"Читать книгу в Дом в 09:00:00"
+        expected_str = "Читать книгу в Дом в 09:00:00"
         self.assertEqual(str(habit), expected_str)
 
 
