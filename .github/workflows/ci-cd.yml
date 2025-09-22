@@ -47,7 +47,6 @@ jobs:
         ALLOWED_HOSTS: "localhost,127.0.0.1"
         TELEGRAM_BOT_TOKEN: "test:token"
       run: |
-        # Запускаем только базовые тесты моделей
         python manage.py test habits.tests.HabitModelTest --noinput -v=1
         python manage.py test habits.tests.HabitValidatorTest --noinput -v=1
         python manage.py test users.tests.UserModelTest --noinput -v=1
@@ -70,7 +69,7 @@ jobs:
       run: |
         docker run --rm habits-tracker python -c "import django; print('Django available')"
 
-  # 3. Автоматический деплой на сервер (ИСПРАВЛЕННАЯ ВЕРСИЯ)
+  # 3. Автоматический деплой на сервер
   deploy:
     runs-on: ubuntu-latest
     needs: [test-and-lint, docker-build]
@@ -80,46 +79,41 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Deploy to server using SSH
-      uses: appleboy/ssh-action@v0.1.3
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Deploy to server
+      run: |
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} '
           echo "🚀 Starting deployment..."
           cd /opt/habits-tracker
           
-          # Останавливаем текущие контейнеры
           docker compose down
           
-          # Pull последних изменений
           git pull origin main
           
-          # Создаем .env файл если его нет
-          if [ ! -f .env ]; then
-            echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" > .env
-            echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> .env
-            echo "DEBUG=False" >> .env
-            echo "ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,${{ secrets.SSH_HOST }}" >> .env
-            echo "POSTGRES_DB=habits_db" >> .env
-            echo "POSTGRES_USER=habits_user" >> .env
-            echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
-          fi
+          # Создаем/обновляем .env файл
+          cat > .env << EOL
+          SECRET_KEY=${{ secrets.SECRET_KEY }}
+          TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+          DEBUG=False
+          ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,${{ secrets.SERVER_HOST }}
+          POSTGRES_DB=habits_db
+          POSTGRES_USER=habits_user
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          EOL
           
-          # Перезапускаем контейнеры
           docker compose up -d --build
           
-          # Ждем готовности базы данных
           sleep 10
           
-          # Выполняем миграции
           docker compose exec web python manage.py migrate --noinput
           
-          # Собираем статические файлы
           docker compose exec web python manage.py collectstatic --noinput
           
-          # Перезапускаем nginx для применения изменений
-          docker compose restart nginx
-          
           echo "✅ Deployment completed successfully!"
+        '
