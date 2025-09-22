@@ -69,26 +69,21 @@ jobs:
       run: |
         docker run --rm habits-tracker python -c "import django; print('Django available')"
 
-  # 3. Автоматический деплой на сервер
+  # 3. Деплой на сервер (исправленная версия с паролем)
   deploy:
     runs-on: ubuntu-latest
     needs: [test-and-lint, docker-build]
     if: success() && github.ref == 'refs/heads/main'
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup SSH
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+    - name: Install SSHpass
+      run: sudo apt-get install -y sshpass
 
     - name: Deploy to server
       run: |
-        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} '
+        export SSHPASS=${{ secrets.SSH_PASSPHRASE }}
+        
+        sshpass -e ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} << 'EOF'
           echo "🚀 Starting deployment..."
           cd /opt/habits-tracker
           
@@ -96,7 +91,6 @@ jobs:
           
           git pull origin main
           
-          # Создаем/обновляем .env файл
           cat > .env << EOL
           SECRET_KEY=${{ secrets.SECRET_KEY }}
           TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -116,4 +110,4 @@ jobs:
           docker compose exec web python manage.py collectstatic --noinput
           
           echo "✅ Deployment completed successfully!"
-        '
+          EOF
