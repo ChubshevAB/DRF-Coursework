@@ -95,14 +95,14 @@ jobs:
           
           # Создаем/обновляем .env файл
           cat > .env << EOL
-SECRET_KEY=${{ secrets.SECRET_KEY }}
-TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
-DEBUG=False
-ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,${{ secrets.SERVER_HOST }}
-POSTGRES_DB=habits_db
-POSTGRES_USER=habits_user
-POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-EOL
+          SECRET_KEY=${{ secrets.SECRET_KEY }}
+          TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+          DEBUG=False
+          ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,${{ secrets.SERVER_HOST }}
+          POSTGRES_DB=habits_db
+          POSTGRES_USER=habits_user
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          EOL
           
           # Перезапускаем контейнеры
           docker compose up -d --build
