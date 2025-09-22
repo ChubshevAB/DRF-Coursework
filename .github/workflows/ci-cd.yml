@@ -69,51 +69,46 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [test-and-lint, docker-build]
+    needs: [ test-and-lint, docker-build ]
     if: success() && github.ref == 'refs/heads/main'
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install SSHpass
-      run: sudo apt-get install -y sshpass
+      - name: Install SSHpass
+        run: sudo apt-get install -y sshpass
 
-    - name: Setup SSH key with passphrase
-      run: |
-        mkdir -p ~/.ssh
-        chmod 700 ~/.ssh
-        echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
-    - name: Test SSH connection
-      run: |
-        # Тестируем подключение с ключом и паролем
-        sshpass -p "${{ secrets.SSH_PASSPHRASE }}" ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} "echo '✅ SSH test successful'"
+      - name: Deploy to server
+        run: |
+          timeout 5m sshpass -p "${{ secrets.SSH_PASSPHRASE }}" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o BatchMode=yes ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} "
+            set -e  # Выход при ошибке
+            echo '🚀 Starting deployment...'
+            cd /opt/habits-tracker
 
-    - name: Deploy to server
-      run: |
-        sshpass -p "${{ secrets.SSH_PASSPHRASE }}" ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} << 'EOF'
-          echo "🚀 Starting deployment..."
-          cd /opt/habits-tracker
-          
-          docker compose down
-          git pull origin main
-          
-          cat > .env << EOL
-          SECRET_KEY=${{ secrets.SECRET_KEY }}
-          TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
-          DEBUG=False
-          ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,${{ secrets.SERVER_HOST }}
-          POSTGRES_DB=habits_db
-          POSTGRES_USER=habits_user
-          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-          EOL
-          
-          docker compose up -d --build
-          sleep 10
-          docker compose exec web python manage.py migrate --noinput
-          docker compose exec web python manage.py collectstatic --noinput
-          echo "✅ Deployment completed successfully!"
-          EOF
+            docker compose down
+            git pull origin main
+
+            # Создаем .env файл
+            sudo tee .env > /dev/null << EOL
+            SECRET_KEY=${{ secrets.SECRET_KEY }}
+            TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+            DEBUG=False
+            ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,${{ secrets.SERVER_HOST }}
+            POSTGRES_DB=habits_db
+            POSTGRES_USER=habits_user
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            EOL
+  
+            docker compose up -d --build
+            sleep 30 
+            docker compose exec -T web python manage.py migrate --noinput
+            docker compose exec -T web python manage.py collectstatic --noinput
+            echo '✅ Deployment completed successfully!'
+            "
