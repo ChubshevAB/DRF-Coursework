@@ -79,23 +79,23 @@ jobs:
     - name: Install SSHpass
       run: sudo apt-get install -y sshpass
 
-    - name: Setup SSH key
+    - name: Setup SSH key with passphrase
       run: |
         mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
         echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
     - name: Test SSH connection
       run: |
-        export SSHPASS=${{ secrets.SSH_PASSPHRASE }}
-        sshpass -e ssh -o BatchMode=yes -i ~/.ssh/id_rsa ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} "echo 'SSH connection successful'"
+        # Тестируем подключение с ключом и паролем
+        sshpass -p "${{ secrets.SSH_PASSPHRASE }}" ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} "echo '✅ SSH test successful'"
 
     - name: Deploy to server
       run: |
-        export SSHPASS=${{ secrets.SSH_PASSPHRASE }}
-        sshpass -e ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} "
-          echo '🚀 Starting deployment...'
+        sshpass -p "${{ secrets.SSH_PASSPHRASE }}" ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          echo "🚀 Starting deployment..."
           cd /opt/habits-tracker
           
           docker compose down
@@ -115,5 +115,5 @@ jobs:
           sleep 10
           docker compose exec web python manage.py migrate --noinput
           docker compose exec web python manage.py collectstatic --noinput
-          echo '✅ Deployment completed successfully!'
-        "
+          echo "✅ Deployment completed successfully!"
+          EOF
